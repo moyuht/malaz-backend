@@ -13,16 +13,21 @@ app.post('/api/ai', async (req, res) => {
     return res.status(500).json({ error: "المفتاح السري غير موجود في السيرفر!" });
   }
 
-  // استخدمنا v1beta هون لأنها الوحيدة اللي بتفهم systemInstruction بدون ما تضرب خطأ
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  // استخدمنا النسخة الأحدث والأكثر استقراراً
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
 
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: userText }] }],
-        systemInstruction: { parts: [{ text: systemPrompt }] }
+        // الضربة القاضية: دمجنا شخصية ملاذ مع الرسالة لضمان عدم رفض جوجل للطلب
+        contents: [
+          { 
+            role: "user", 
+            parts: [{ text: `أوامر لك كذكاء اصطناعي: ${systemPrompt}\n\nرسالة المستخدم: ${userText}` }] 
+          }
+        ]
       })
     });
     
