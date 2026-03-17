@@ -2,24 +2,19 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-
-// السماح لتطبيقك الأساسي بالاتصال
 app.use(cors());
 app.use(express.json());
 
-// النقطة اللي رح تستقبل رسائل تطبيقك
 app.post('/api/ai', async (req, res) => {
   const { userText, systemPrompt } = req.body;
-  
-  // سحب المفتاح من خزنة Render حصراً لحمايته
   const apiKey = process.env.GEMINI_API_KEY; 
 
   if (!apiKey) {
     return res.status(500).json({ error: "المفتاح السري غير موجود في السيرفر!" });
   }
 
-  // استخدام الإصدار المستقر v1 مع الموديل السريع flash
-  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  // استخدمنا v1beta هون لأنها الوحيدة اللي بتفهم systemInstruction بدون ما تضرب خطأ
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   try {
     const response = await fetch(url, {
@@ -37,9 +32,9 @@ app.post('/api/ai', async (req, res) => {
       return res.status(400).json({ error: data.error.message });
     }
     
-    res.json(data); // إرجاع الرد لجهازك
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ error: "فشل الاتصال بسيرفرات جوجل من قبل السيرفر الوسيط." });
+    res.status(500).json({ error: "فشل الاتصال بسيرفرات جوجل." });
   }
 });
 
